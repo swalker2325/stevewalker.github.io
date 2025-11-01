@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Product Assistant | Steve Walker</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#0e0e0e; color:#f5f5f5; margin:0; padding:40px; }
+    a { color:#e2b714; text-decoration:none; } a:hover { text-decoration:underline; }
+    h1, h2 { color:#e2b714; }
+    .card { background:#161616; padding:24px; border-radius:12px; margin:16px 0; }
+    .muted { color:#bcbcbc; }
+    .btn { display:inline-block; padding:10px 14px; border-radius:8px; background:#222; border:1px solid #333; cursor:pointer; }
+    .grid { display:grid; gap:16px; }
+  </style>
+</head>
+<body>
+  <a href="/">&larr; Back to portfolio</a>
+  <h1>AI Product Assistant</h1>
+  <p class="muted">A lightweight assistant that turns short prompts into structured product ideas and task breakdowns.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Objective</h2>
+      <p>Showcase practical AI product thinking: prompt design, output structure, and business usefulness without heavy code.</p>
+    </div>
+
+    <div class="card">
+      <h2>Features (v1)</h2>
+      <ul>
+        <li>Takes a short user prompt</li>
+        <li>Returns a structured brief: problem, users, value, risks, and next actions</li>
+        <li>Clean, copyable output</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Live Demo (stub)</h2>
+      <p class="muted">This is a front-end mock we’ll wire to an API later.</p>
+      <textarea id="prompt" rows="4" style="width:100%;"></textarea>
+      <div style="margin-top:10px;">
+        <button class="btn" onclick="runDemo()">Generate Brief</button>
+      </div>
+      <pre id="out" style="white-space:pre-wrap; margin-top:12px;"></pre>
+    </div>
+
+    <div class="card">
+      <h2>Status</h2>
+      <p>Work in progress. API wiring and prompt library coming next.</p>
+    </div>
+  </div>
+
+  <script>
+    function runDemo(){
+      const p = document.getElementById('prompt').value.trim() || 'AI for post-sale follow-ups in automotive';
+      const template = `
+Product Brief
+-------------
+User prompt: ${p}
+
+Problem
+- Repetitive manual follow-ups reduce consistency and waste time.
+
+Users
+- Sales reps, BDC agents, managers tracking conversion.
+
+Solution (v1)
+- Assistant generates tailored follow-ups and next-best-actions from CRM notes.
+
+Value
+- Higher response rates, faster cycles, clearer next steps.
+
+Risks
+- Tone mismatches, hallucinations, poor CRM hygiene.
+
+Next Actions
+- Define guardrails & tone
+- Add templated prompts per scenario
+- A/B test copy on 50 leads
+      `.trim();
+      document.getElementById('out').textContent = template;
+    }
+  </script>
+</body>
+</html>
