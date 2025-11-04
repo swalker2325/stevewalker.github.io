@@ -1,0 +1,6 @@
+lead_id,source,interactions,days_in_stage,budget,segment,last_touch_days
+A1001,referral,4,8,65000,warm,3
+A1002,web,1,22,18000,cold,21
+A1003,repeat,5,12,52000,warm,5
+A1004,event,2,15,40000,cold,10
+A1005,web,3,5,90000,hot,1
