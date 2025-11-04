@@ -1,37 +1,148 @@
-<!doctype html>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Project Title — Steve Walker</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Framework Library</title>
 <style>
-  body{margin:0;background:#0b0b0b;color:#f5f5f5;font-family:Inter,system-ui,Arial}
-  .wrap{max-width:960px;margin:0 auto;padding:28px}
-  .crumbs{color:#b8b8b8}
-  .panel{background:#121212;border:1px solid #252525;border-radius:14px;padding:20px;margin-top:18px}
-  .badge{display:inline-block;background:#1f1f1f;border:1px solid #252525;border-radius:999px;padding:6px 10px;color:#b8b8b8;font-size:12px;margin-right:8px}
-  a{color:#e2b714;text-decoration:none}
-  button{background:#e2b714;color:#111;border:none;border-radius:10px;padding:10px 14px;cursor:pointer}
+  body { margin: 0; background-color: #0e0e0e; color: #f5f5f5; font-family: Arial, sans-serif; }
+  .container { display: flex; height: 100vh; }
+  .sidebar {
+    width: 250px; background-color: #141414; padding: 20px; border-right: 1px solid #333;
+  }
+  .sidebar h2 { color: #e2b714; margin-top: 0; }
+  .sidebar button {
+    width: 100%; margin: 8px 0; padding: 10px; background-color: #1c1c1c;
+    color: #f5f5f5; border: 1px solid #333; border-radius: 8px; cursor: pointer;
+  }
+  .sidebar button:hover { background-color: #222; }
+  .main {
+    flex-grow: 1; padding: 30px; overflow-y: auto;
+  }
+  h1 { color: #e2b714; margin-bottom: 10px; }
+  textarea, input {
+    width: 100%; background-color: #121212; border: 1px solid #333;
+    color: #f5f5f5; border-radius: 8px; padding: 10px; margin-bottom: 15px;
+  }
+  button.action {
+    background-color: #222; color: #f5f5f5; border: 1px solid #333;
+    border-radius: 8px; padding: 10px 16px; cursor: pointer; margin-right: 8px;
+  }
+  pre {
+    background-color: #121212; border: 1px solid #333; border-radius: 8px;
+    padding: 14px; white-space: pre-wrap; line-height: 1.5;
+  }
+  a { color: #e2b714; text-decoration: none; }
 </style>
-<div class="wrap">
-  <div class="crumbs"><a href="../../">← Back</a></div>
-  <h1 style="margin-top:10px;color:#e2b714">Project Title</h1>
-  <p class="panel">One-liner value prop. What it does and why it exists.</p>
-
-  <div class="panel">
-    <h3 style="margin:0 0 8px">Tech & Role</h3>
-    <span class="badge">Flask</span><span class="badge">JavaScript</span><span class="badge">Prompt Systems</span>
+</head>
+<body>
+<div class="container">
+  <div class="sidebar">
+    <h2>Categories</h2>
+    <button onclick="loadCategory('strategy')">Strategy</button>
+    <button onclick="loadCategory('marketing')">Marketing</button>
+    <button onclick="loadCategory('ux')">UX Writing</button>
+    <button onclick="loadCategory('analysis')">Analysis</button>
+    <div style="margin-top:20px"><a href="../../">← Back to Portfolio</a></div>
   </div>
 
-  <div class="panel">
-    <h3 style="margin:0 0 8px">Live Demo</h3>
-    <!-- Your project UI goes here -->
-  </div>
+  <div class="main">
+    <h1>Prompt Framework Library</h1>
+    <p>Select a category and edit or run your own prompt framework below.</p>
 
-  <div class="panel">
-    <h3 style="margin:0 0 8px">How it works</h3>
-    <ul>
-      <li>Input → structured prompt</li>
-      <li>Backend → /generate returns JSON</li>
-      <li>Frontend renders sections</li>
-    </ul>
+    <input id="variables" placeholder="Variables (comma-separated): product, audience, budget" />
+    <textarea id="template" rows="10" placeholder="Select a template to begin..."></textarea>
+
+    <div>
+      <button class="action" onclick="insertTemplate()">Insert Example Vars</button>
+      <button class="action" onclick="runPrompt()">Generate Brief</button>
+      <button class="action" onclick="copyOutput()">Copy Output</button>
+    </div>
+
+    <pre id="output">Output will appear here…</pre>
   </div>
 </div>
+
+<script>
+const API_URL = "https://a8ad6bfd-0b9e-4c04-b86b-ee6f5673b396-00-3j9vlmht90fsh.picard.replit.dev/generate";
+
+const templates = {
+  strategy: `Role: Senior AI Product Strategist
+Task: Convert a plain request into a structured brief.
+
+Input:
+- Product: {product}
+- Audience: {audience}
+- Budget: {budget}
+- Deadline: {deadline}
+
+Output JSON keys only:
+prompt, brief.problem[], brief.users[], brief.solution[], brief.value[], brief.risks[], brief.next_actions[]`,
+  
+  marketing: `Role: Marketing Strategist
+Task: Create a positioning brief for {product} targeting {audience}.
+Return JSON with keys: brief.value[], brief.solution[], brief.next_actions[]`,
+
+  ux: `Role: UX Writer
+Task: Design a 3-step onboarding flow for {product}.
+Return JSON with keys: brief.solution[], brief.risks[], brief.value[]`,
+
+  analysis: `Role: AI Analyst
+Task: Provide a churn analysis framework for {product} in {segment}.
+Return JSON with keys: brief.problem[], brief.risks[], brief.next_actions[]`
+};
+
+function loadCategory(cat) {
+  document.getElementById('template').value = templates[cat] || '';
+}
+
+function insertTemplate() {
+  const vars = document.getElementById('variables').value.split(',').map(v => v.trim());
+  let text = document.getElementById('template').value;
+  const examples = {
+    product: "AI assistant for luxury car sales",
+    audience: "dealership managers",
+    budget: "$10,000",
+    deadline: "2 weeks",
+    segment: "premium market"
+  };
+  vars.forEach(v => {
+    text = text.replaceAll(`{${v}}`, examples[v] || `{${v}}`);
+  });
+  document.getElementById('template').value = text;
+}
+
+async function runPrompt() {
+  const output = document.getElementById('output');
+  output.textContent = "Thinking...";
+  try {
+    const prompt = document.getElementById('template').value;
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const brief = data.brief || {};
+    output.textContent = `
+${data.prompt ? "Prompt: " + data.prompt + "\n\n" : ""}
+Problem:\n${(brief.problem || []).join("\n")}
+\nUsers:\n${(brief.users || []).join("\n")}
+\nSolution:\n${(brief.solution || []).join("\n")}
+\nValue:\n${(brief.value || []).join("\n")}
+\nRisks:\n${(brief.risks || []).join("\n")}
+\nNext Actions:\n${(brief.next_actions || []).join("\n")}
+`.trim();
+  } catch (err) {
+    output.textContent = "Error: " + err.message;
+  }
+}
+
+function copyOutput() {
+  const text = document.getElementById('output').textContent;
+  navigator.clipboard.writeText(text);
+}
+</script>
+</body>
+</html>
