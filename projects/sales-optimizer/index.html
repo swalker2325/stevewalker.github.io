@@ -1,0 +1,184 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Optimization AI — Steve Walker</title>
+<style>
+  :root{--bg:#0b0b0b;--panel:#121212;--muted:#b8b8b8;--text:#f5f5f5;--brand:#e2b714;--stroke:#252525}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial}
+  a{color:var(--brand);text-decoration:none}
+  .wrap{max-width:1100px;margin:0 auto;padding:28px}
+  h1{margin:0 0 8px;color:var(--brand)}
+  .panel{background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:18px;margin-top:16px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  input[type=file]{padding:10px;border:1px solid var(--stroke);border-radius:10px;background:#1a1a1a;color:var(--text)}
+  button{background:var(--brand);color:#111;border:none;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
+  button.secondary{background:#1a1a1a;color:var(--text);border:1px solid var(--stroke)}
+  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:12px;font-size:14px}
+  th,td{padding:10px;border-bottom:1px solid var(--stroke);vertical-align:top}
+  th{color:var(--muted);text-align:left;cursor:pointer}
+  .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#1f1f1f;border:1px solid var(--stroke);color:var(--muted);font-size:12px;margin-right:6px}
+  .muted{color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <a href="../../">← Back</a>
+  <h1>Sales Optimization AI</h1>
+  <p class="muted">Score leads and get next-best actions. Runs locally for demos; optionally calls your API for smarter notes.</p>
+
+  <div class="panel">
+    <div class="row">
+      <input id="file" type="file" accept=".csv">
+      <button onclick="loadCSV()">Load CSV</button>
+      <button class="secondary" onclick="downloadCSV()">Download Scored CSV</button>
+      <label class="pill"><input id="useLLM" type="checkbox" style="margin-right:6px">Use API for notes</label>
+    </div>
+    <div style="margin-top:8px" class="muted">
+      Required columns: lead_id, source, interactions, days_in_stage, budget, segment, last_touch_days
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <span class="pill">Heuristic v1</span>
+      <span class="pill">CSV In/Out</span>
+      <span class="pill">Optional LLM Notes</span>
+    </div>
+    <div id="tableWrap" style="margin-top:12px">No data loaded yet.</div>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://a8ad6bfd-0b9e-4c04-b86b-ee6f5673b396-00-3j9vlmht90fsh.picard.replit.dev/score-notes"; // optional
+
+let rows = []; // parsed input rows with scores
+let headers = [];
+
+function parseCSV(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim().length);
+  const head = lines[0].split(',').map(h=>h.trim());
+  const data = lines.slice(1).map(line=>{
+    const cols = line.split(',').map(c=>c.trim());
+    const obj = {};
+    head.forEach((h,i)=>obj[h]=cols[i] ?? "");
+    return obj;
+  });
+  return {head, data};
+}
+
+function scoreLead(r){
+  // numeric helpers
+  const n = (v, d=0)=>isNaN(+v)? d : +v;
+
+  let score = 100;
+  score -= 2 * n(r.days_in_stage);
+  if(n(r.interactions) >= 3) score += 10;
+  if((r.source||"").toLowerCase().match(/referral|repeat/)) score += 8;
+  if(n(r.budget) >= 50000) score += 6;
+  if(n(r.last_touch_days) > 14) score -= 12;
+  if((r.segment||"").toLowerCase() === "cold") score -= 15;
+
+  score = Math.max(0, Math.min(100, score));
+
+  // quick local notes/actions
+  const risks = [];
+  if(n(r.days_in_stage) > 20) risks.push("Stalled in stage >20 days");
+  if(n(r.last_touch_days) > 14) risks.push("No recent touch");
+  if(n(r.interactions) < 2) risks.push("Low engagement");
+  if(n(r.budget) < 25000) risks.push("Low budget");
+  if((r.segment||"").toLowerCase()==="cold") risks.push("Cold segment");
+
+  let action = "Call + email within 24h with a specific offer";
+  if(n(r.last_touch_days) > 14) action = "Send reactivation email + call in 2 hours";
+  if(n(r.interactions) >= 3) action = "Propose test drive date; hold slot on calendar";
+  if((r.source||"").toLowerCase().includes("referral")) action = "Reference referrer; fast-track incentives";
+
+  return { score, risks, action };
+}
+
+async function maybeLLMNotes(batch){
+  if(!document.getElementById('useLLM').checked) return batch; // skip
+  try{
+    const res = await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ leads: batch.map(({raw,score})=>({
+        lead_id: raw.lead_id, source: raw.source, interactions: raw.interactions,
+        days_in_stage: raw.days_in_stage, budget: raw.budget, segment: raw.segment,
+        last_touch_days: raw.last_touch_days, score
+      }))})
+    });
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const data = await res.json(); // expects {notes: {lead_id: {risks:[], action:""}}}
+    return batch.map(item=>{
+      const n = (data.notes||{})[item.raw.lead_id];
+      if(n){
+        return { ...item, risks: n.risks?.length ? n.risks : item.risks, action: n.action || item.action };
+      }
+      return item;
+    });
+  }catch(e){
+    console.warn("LLM notes failed:", e.message);
+    return batch;
+  }
+}
+
+function renderTable(list){
+  if(!list.length){ document.getElementById('tableWrap').textContent = "No rows."; return; }
+  const cols = [...headers, "score", "risks", "next_action"];
+  let html = `<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  list.forEach(it=>{
+    html += `<tr>${
+      headers.map(h=>`<td>${escapeHTML(it.raw[h]??"")}</td>`).join('')
+    }<td><strong>${it.score}</strong></td>
+      <td>${(it.risks||[]).map(r=>`• ${escapeHTML(r)}`).join('<br>')}</td>
+      <td>${escapeHTML(it.action||"")}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+  document.getElementById('tableWrap').innerHTML = html;
+}
+
+function escapeHTML(s){ return (s+"").replace(/[&<>"]/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
+
+async function loadCSV(){
+  const f = document.getElementById('file').files[0];
+  if(!f){ alert("Pick a CSV first."); return; }
+  const text = await f.text();
+  const {head, data} = parseCSV(text);
+  headers = head;
+
+  // sanity for required columns
+  const required = ["lead_id","source","interactions","days_in_stage","budget","segment","last_touch_days"];
+  const missing = required.filter(r=>!headers.includes(r));
+  if(missing.length){ alert("Missing columns: " + missing.join(", ")); return; }
+
+  // score locally
+  let batch = data.map(raw=>{
+    const s = scoreLead(raw);
+    return { raw, score: s.score, risks: s.risks, action: s.action };
+  });
+
+  // optional LLM enrichment
+  batch = await maybeLLMNotes(batch);
+
+  rows = batch;
+  renderTable(rows);
+}
+
+function downloadCSV(){
+  if(!rows.length){ alert("Load data first."); return; }
+  const cols = [...headers, "score", "risks", "next_action"];
+  const lines = [cols.join(",")].concat(
+    rows.map(r=>[
+      ...headers.map(h=>String(r.raw[h]??"").replace(/,/g," ")),
+      r.score,
+      (r.risks||[]).join(" | ").replace(/,/g,"/"),
+      (r.action||"").replace(/,/g,"/")
+    ].join(","))
+  );
+  const blob = new Blob([lines.join("\n")], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement("a"), {href:url, download:"scored_pipeline.csv"});
+  a.click(); URL.revokeObjectURL(url);
+}
+</script>
