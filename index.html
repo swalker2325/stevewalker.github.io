@@ -1,41 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Steve Walker | AI Product Strategist</title>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #0e0e0e; color: #f5f5f5; margin: 0; padding: 40px; }
-    h1 { font-size: 2.2em; margin-bottom: 10px; color: #e2b714; }
-    p { font-size: 1.1em; line-height: 1.6; color: #cfcfcf; max-width: 700px; }
-    a { color: #e2b714; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Steve Walker | AI Product Strategist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0b0b; --panel:#121212; --muted:#b8b8b8; --text:#f5f5f5; --brand:#e2b714; --stroke:#252525;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  a{color:var(--brand);text-decoration:none}
+  .container{max-width:1120px;margin:0 auto;padding:24px}
+  .nav{position:sticky;top:0;background:rgba(11,11,11,.7);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--stroke)}
+  .nav-wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .brand{font-weight:800;letter-spacing:.3px}
+  .nav a{color:var(--muted);margin-left:18px}
+  .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center;padding:48px 0;border-bottom:1px solid var(--stroke)}
+  .card{background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:22px}
+  h1{font-size:40px;line-height:1.1;margin:0 0 10px;color:var(--brand)}
+  h2{font-size:22px;margin:0 0 6px}
+  p{color:var(--muted);line-height:1.6}
+  .cta{display:flex;gap:12px;margin-top:14px}
+  .btn{background:var(--brand);color:#111;padding:12px 16px;border-radius:10px;font-weight:600;border:none;cursor:pointer}
+  .btn.secondary{background:#1c1c1c;color:var(--text);border:1px solid var(--stroke)}
+  .grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:18px;margin-top:28px}
+  .badge{display:inline-block;background:#1f1f1f;border:1px solid var(--stroke);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px;margin-right:8px}
+  .footer{margin-top:40px;padding:20px 0;border-top:1px solid var(--stroke);color:var(--muted);font-size:14px}
+  @media (max-width:900px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <h1>Steve Walker</h1>
-  <h2>AI Product Strategist | IBM Generative AI Professional Certificate (in progress)</h2>
-  <p>Welcome to my portfolio. I’m transitioning from automotive sales into AI product strategy and system design, with a focus on generative AI, automation, and human-centered technology. This site will showcase my projects, certifications, and progress.</p>
-  <p>Projects coming soon. Follow my progress on <a href="https://github.com/SteveWalker" target="_blank">GitHub</a>.</p>
+  <div class="nav">
+    <div class="container nav-wrap">
+      <div class="brand">Steve Walker</div>
+      <div>
+        <a href="#projects">Projects</a>
+        <a href="resume.pdf" target="_blank">Resume</a>
+        <a href="mailto:stevewalker@email.com">Contact</a>
+      </div>
+    </div>
+  </div>
 
-  <h2>Featured Projects</h2>
-  <ul>
-    <li><a href="projects/ai-product-assistant/" target="_blank"><strong>AI Product Assistant</strong></a> – a personalized AI workflow that automates client responses and product recommendations.</li>
-    <li><strong>Sales Optimization AI</strong> – predictive assistant for lead management and conversion analytics. (Coming soon)</li>
-    <li><a href="projects/prompt-framework/" target="_blank"><strong>Prompt Framework Library</strong></a> – modular prompt patterns with one-click run.</li>
-  </ul>
+  <div class="container">
+    <section class="hero">
+      <div class="card">
+        <h1>AI Product Strategist</h1>
+        <p>I design lean AI workflows that turn ambiguous ideas into shippable value. Background in sales ops and finance; now focused on GenAI product strategy, prompt systems, and decision automation.</p>
+        <div class="cta">
+          <a class="btn" href="#projects">View Projects</a>
+          <a class="btn secondary" href="resume.pdf" target="_blank">Download Résumé</a>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Now</h2>
+        <p>Building a portfolio of practical GenAI tools. IBM Generative AI Professional Certificate (in progress). Open to AI Product / PM / Prompt roles.</p>
+        <div>
+          <span class="badge">Prompt Engineering</span>
+          <span class="badge">LLM Apps</span>
+          <span class="badge">Flask + JS</span>
+        </div>
+      </div>
+    </section>
 
-  <h2>Certifications</h2>
-  <ul>
-    <li><strong>IBM Generative AI Engineering Professional Certificate</strong> – In Progress (Expected January 2025)</li>
-    <li><strong>AI Foundations by IBM</strong> – Completed</li>
-  </ul>
+    <section id="projects" style="padding:28px 0">
+      <h2 style="margin:0 0 10px">Featured Projects</h2>
+      <p class="muted">Fast, functional demos with clean structure and simple deployments.</p>
+      <div class="grid">
+        <a class="card" href="projects/ai-product-assistant/" target="_blank">
+          <h3 style="margin:0 0 6px;color:var(--text)">AI Product Assistant</h3>
+          <p>Turns a plain request into a structured brief (Problem → Users → Solution → Value → Risks → Actions).</p>
+          <div style="margin-top:8px">
+            <span class="badge">Flask API</span><span class="badge">JSON Schema</span><span class="badge">Prompt System</span>
+          </div>
+        </a>
 
-  <h2>About Me</h2>
-  <p>Transitioning from automotive sales to AI Product Strategy. Combining 8+ years of client relationship expertise, negotiation, and business logic with modern generative AI systems. Currently completing the IBM Generative AI Professional Certificate and building hands-on projects to demonstrate AI product design, automation strategy, and business alignment.</p>
+        <a class="card" href="projects/prompt-framework/" target="_blank">
+          <h3 style="margin:0 0 6px;color:var(--text)">Prompt Framework Library</h3>
+          <p>Catalog of reusable prompt patterns with variables and one-click run via your backend.</p>
+          <div style="margin-top:8px">
+            <span class="badge">Prompt Design</span><span class="badge">Templates</span><span class="badge">Demo-Ready</span>
+          </div>
+        </a>
 
-  <h2>Resume</h2>
-  <p><a href="resume.pdf" target="_blank" style="color:#e2b714;">Download Resume</a></p>
+        <a class="card" href="#" onclick="alert('Coming soon'); return false;">
+          <h3 style="margin:0 0 6px;color:var(--text)">Sales Optimization AI</h3>
+          <p>Scores leads and suggests next best actions with a simple heuristic + commentary.</p>
+          <div style="margin-top:8px">
+            <span class="badge">CSV In/Out</span><span class="badge">Scoring</span><span class="badge">LLM Notes</span>
+          </div>
+        </a>
+      </div>
+    </section>
 
+    <div class="footer">
+      © Steve Walker — <a href="https://github.com/swalker2325" target="_blank">GitHub</a> · 
+      <a href="https://www.linkedin.com/in/steve-walker-b30a908a" target="_blank">LinkedIn</a>
+    </div>
+  </div>
 </body>
 </html>
